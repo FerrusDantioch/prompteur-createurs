@@ -1,0 +1,9 @@
+# Uniformise les fins de ligne entre Windows, macOS et Linux.
+# Sans ce réglage, Git signale sans arrêt que « les fins de ligne changent »,
+# et les fichiers apparaissent modifiés alors qu'ils ne le sont pas.
+* text=auto eol=lf
+
+# Fichiers binaires : Git ne doit surtout pas y toucher.
+*.png binary
+*.woff2 binary
+*.pdf binary

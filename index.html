@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport-fit=cover : l'application peut occuper tout l'écran, y compris
+       sous l'encoche des téléphones (on gère les marges dans styles.css). -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <!-- Politique de sécurité du contenu (CSP) : le navigateur REFUSE de charger
+       ou de contacter quoi que ce soit en dehors de notre propre site ('self').
+       C'est la garantie technique qu'aucune donnée (texte, image caméra, son)
+       ne peut partir vers un serveur extérieur, même par erreur.
+       « blob: » autorise la relecture des enregistrements stockés sur l'appareil. -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+
+  <title>Prompteur Créateurs</title>
+  <meta name="description" content="Télé-prompteur pour créateurs de contenu : texte défilant sur la caméra ou pendant un enregistrement audio, 100 % hors ligne.">
+  <meta name="theme-color" content="#0e1014">
+  <meta name="color-scheme" content="dark">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Prompteur">
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- type="module" : le script s'exécute après la lecture complète de la page,
+       et ses variables ne « débordent » pas dans le reste du navigateur. -->
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+
+  <!-- =====================================================================
+       BIBLIOTHÈQUE D'ICÔNES
+       Chaque icône est dessinée une seule fois ici (<symbol>), puis réutilisée
+       partout avec <svg><use href="#i-nom"></use></svg>. Aucune police d'icônes
+       ni fichier externe : tout est dans la page.
+       ===================================================================== -->
+  <svg class="sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-retour" viewBox="0 0 24 24"><path d="M19 12H5M11 19l-7-7 7-7"/></symbol>
+    <symbol id="i-lecture" viewBox="0 0 24 24"><path d="M7 4.6v14.8a1 1 0 0 0 1.5.86l12-7.4a1 1 0 0 0 0-1.72l-12-7.4A1 1 0 0 0 7 4.6z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><rect x="5.5" y="4.5" width="4.5" height="15" rx="1.2" fill="currentColor" stroke="none"/><rect x="14" y="4.5" width="4.5" height="15" rx="1.2" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><rect x="5.5" y="5.5" width="13" height="13" rx="2.2" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-rec" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-debut" viewBox="0 0 24 24"><path d="M6 5v14"/><path d="M19 5.6v12.8a.8.8 0 0 1-1.25.66L8.6 12.66a.8.8 0 0 1 0-1.32l9.15-6.4A.8.8 0 0 1 19 5.6z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-reculer" viewBox="0 0 24 24"><path d="M7 17l5-5 5 5M7 11l5-5 5 5"/></symbol>
+    <symbol id="i-avancer" viewBox="0 0 24 24"><path d="M7 7l5 5 5-5M7 13l5 5 5-5"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><rect x="2.5" y="6" width="13" height="12" rx="2.5"/><path d="M15.5 10.5l6-3.5v10l-6-3.5z"/></symbol>
+    <symbol id="i-micro" viewBox="0 0 24 24"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3.5M8.5 21.5h7"/></symbol>
+    <symbol id="i-changer-camera" viewBox="0 0 24 24"><path d="M20 8.5A8.5 8.5 0 0 0 5.2 6.2L3.5 8"/><path d="M3.5 3.5V8H8"/><path d="M4 15.5a8.5 8.5 0 0 0 14.8 2.3l1.7-1.8"/><path d="M20.5 20.5V16H16"/></symbol>
+    <symbol id="i-oeil" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-oeil-barre" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.1M6.6 6.6C3.6 8.6 2 12 2 12s3.6 7 10 7a9.8 9.8 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></symbol>
+    <symbol id="i-reglages" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+    <symbol id="i-plein-ecran" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+    <symbol id="i-quitter-plein-ecran" viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-moins" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+    <symbol id="i-crayon" viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.83 2.83 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></symbol>
+    <symbol id="i-corbeille" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13"/><path d="M10 11v5M14 11v5"/></symbol>
+    <symbol id="i-telecharger" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+    <symbol id="i-partager" viewBox="0 0 24 24"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4.1M8.2 13.2l7.6 4.1"/></symbol>
+    <symbol id="i-importer" viewBox="0 0 24 24"><path d="M12 15V4M7 9l5-5 5 5M5 20h14"/></symbol>
+    <symbol id="i-document" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+    <symbol id="i-livre" viewBox="0 0 24 24"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19"/></symbol>
+    <symbol id="i-liste" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.5" cy="18" r="1.2" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-onde" viewBox="0 0 24 24"><path d="M3 12h1.5M7 8v8M11 4.5v15M15 9v6M19 6.5v11"/></symbol>
+    <symbol id="i-coche" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-fermer" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-cadenas" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="i-recherche" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.3-4.3"/></symbol>
+  </svg>
+
+  <!-- =====================================================================
+       ÉCRAN 1 : ACCUEIL
+       Un seul « écran » est visible à la fois : les autres portent l'attribut
+       hidden, que app.js retire ou remet selon la navigation.
+       ===================================================================== -->
+  <main id="ecran-accueil" class="ecran" data-ecran="accueil">
+    <header class="entete-accueil">
+      <img class="logo" src="icons/icon.svg" alt="" width="56" height="56">
+      <div>
+        <h1>Prompteur Créateurs</h1>
+        <p class="sous-titre">Votre texte défile, vous restez naturel.</p>
+      </div>
+    </header>
+
+    <button id="bouton-installer" class="bouton bouton-secondaire bouton-large" type="button" hidden>
+      <svg class="icone"><use href="#i-telecharger"></use></svg> Installer l'application
+    </button>
+
+    <section class="carte carte-script-actif" aria-labelledby="titre-carte-script">
+      <h2 id="titre-carte-script" class="etiquette">Script sélectionné</h2>
+      <p id="script-actif-titre" class="script-actif-titre">Aucun script</p>
+      <p id="script-actif-details" class="texte-doux"></p>
+      <div class="rangee-boutons">
+        <button class="bouton bouton-secondaire" type="button" data-aller="bibliotheque">
+          <svg class="icone"><use href="#i-livre"></use></svg> Changer
+        </button>
+        <button id="bouton-modifier-script-actif" class="bouton bouton-secondaire" type="button">
+          <svg class="icone"><use href="#i-crayon"></use></svg> Modifier
+        </button>
+      </div>
+    </section>
+
+    <section class="choix-mode" aria-label="Choisir un mode">
+      <button id="bouton-mode-videaste" class="carte-mode" type="button">
+        <svg class="icone icone-mode"><use href="#i-camera"></use></svg>
+        <span class="carte-mode-titre">Vidéaste</span>
+        <span class="carte-mode-texte">Caméra en direct, texte en surimpression, enregistrement vidéo</span>
+      </button>
+      <button id="bouton-mode-podcast" class="carte-mode" type="button">
+        <svg class="icone icone-mode"><use href="#i-micro"></use></svg>
+        <span class="carte-mode-titre">Podcast</span>
+        <span class="carte-mode-texte">Micro seul, texte défilant, enregistrement audio</span>
+      </button>
+    </section>
+
+    <nav class="menu-accueil" aria-label="Menu principal">
+      <button class="bouton-menu" type="button" data-aller="bibliotheque">
+        <svg class="icone"><use href="#i-livre"></use></svg>
+        <span>Bibliothèque de scripts</span>
+      </button>
+      <button class="bouton-menu" type="button" data-aller="enregistrements">
+        <svg class="icone"><use href="#i-liste"></use></svg>
+        <span>Mes enregistrements</span>
+      </button>
+      <button class="bouton-menu" type="button" data-aller="reglages">
+        <svg class="icone"><use href="#i-reglages"></use></svg>
+        <span>Réglages d'affichage</span>
+      </button>
+    </nav>
+
+    <p class="mention-confidentialite">
+      <svg class="icone"><use href="#i-cadenas"></use></svg>
+      Tout reste sur votre appareil : aucun texte, image ou son n'est envoyé sur Internet.
+    </p>
+  </main>
+
+  <!-- =====================================================================
+       ÉCRAN 2 : BIBLIOTHÈQUE DE SCRIPTS
+       ===================================================================== -->
+  <section id="ecran-bibliotheque" class="ecran" data-ecran="bibliotheque" hidden>
+    <header class="barre-ecran">
+      <button class="bouton-icone" type="button" data-action="retour" aria-label="Retour" title="Retour">
+        <svg class="icone"><use href="#i-retour"></use></svg>
+      </button>
+      <h1>Bibliothèque de scripts</h1>
+    </header>
+
+    <div class="rangee-boutons">
+      <button id="bouton-nouveau-script" class="bouton bouton-primaire" type="button">
+        <svg class="icone"><use href="#i-plus"></use></svg> Nouveau script
+      </button>
+      <!-- Le vrai champ « fichier » est invisible : on clique sur son étiquette,
+           plus facile à mettre en forme qu'un champ de fichier natif. -->
+      <label class="bouton bouton-secondaire" for="champ-import">
+        <svg class="icone"><use href="#i-importer"></use></svg> Importer .txt / .pdf
+      </label>
+      <input id="champ-import" class="visuellement-cache" type="file" accept=".txt,.pdf,text/plain,application/pdf" multiple>
+    </div>
+
+    <div class="champ-recherche">
+      <svg class="icone"><use href="#i-recherche"></use></svg>
+      <input id="recherche-scripts" type="search" placeholder="Rechercher un script…" aria-label="Rechercher un script">
+    </div>
+
+    <p id="etat-import" class="etat-import" role="status" hidden></p>
+    <ul id="liste-scripts" class="liste"></ul>
+    <p id="bibliotheque-vide" class="liste-vide" hidden>
+      Aucun script pour l'instant. Créez-en un ou importez un fichier texte ou PDF.
+    </p>
+  </section>
+
+  <!-- =====================================================================
+       ÉCRAN 3 : ÉDITEUR DE SCRIPT (sauvegarde automatique)
+       ===================================================================== -->
+  <section id="ecran-editeur" class="ecran" data-ecran="editeur" hidden>
+    <header class="barre-ecran">
+      <button class="bouton-icone" type="button" data-action="retour" aria-label="Retour" title="Retour">
+        <svg class="icone"><use href="#i-retour"></use></svg>
+      </button>
+      <h1>Script</h1>
+      <span id="etat-sauvegarde" class="etat-sauvegarde" role="status"></span>
+    </header>
+
+    <div class="champ">
+      <label for="champ-titre">Titre</label>
+      <input id="champ-titre" type="text" maxlength="120" placeholder="Ex. : Vidéo de présentation" autocomplete="off">
+    </div>
+    <div class="champ champ-texte-script">
+      <label for="champ-texte">Texte à lire</label>
+      <textarea id="champ-texte" placeholder="Tapez ou collez votre texte ici…" spellcheck="true"></textarea>
+    </div>
+    <p id="statistiques-texte" class="texte-doux"></p>
+    <p class="astuce">
+      Astuce : un passage entre crochets, [comme ceci], s'affiche en couleur atténuée
+      pendant la lecture. Pratique pour les indications : [pause], [sourire], [montrer le produit].
+    </p>
+
+    <div class="rangee-boutons">
+      <button id="bouton-utiliser-script" class="bouton bouton-primaire" type="button">
+        <svg class="icone"><use href="#i-coche"></use></svg> Utiliser ce script
+      </button>
+      <button id="bouton-supprimer-script" class="bouton bouton-danger" type="button">
+        <svg class="icone"><use href="#i-corbeille"></use></svg> Supprimer
+      </button>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       ÉCRAN 4 : RÉGLAGES D'AFFICHAGE
+       Chaque champ porte un attribut data-reglage="nom" : app.js s'en sert pour
+       relier automatiquement le champ au réglage du même nom.
+       ===================================================================== -->
+  <section id="ecran-reglages" class="ecran" data-ecran="reglages" hidden>
+    <header class="barre-ecran">
+      <button class="bouton-icone" type="button" data-action="retour" aria-label="Retour" title="Retour">
+        <svg class="icone"><use href="#i-retour"></use></svg>
+      </button>
+      <h1>Réglages d'affichage</h1>
+    </header>
+
+    <!-- Aperçu en direct : il utilise exactement les mêmes styles que le prompteur. -->
+    <div id="apercu-reglages" class="apercu-reglages zone-prompteur" aria-hidden="true">
+      <div class="calque-texte">
+        <div class="apercu-texte texte-prompteur">
+          <p>Bonjour à toutes et à tous ! Aujourd'hui, je vous montre comment <span class="indication">[sourire]</span> préparer une vidéo sans oublier une seule idée.</p>
+        </div>
+        <div class="repere-lecture"></div>
+      </div>
+    </div>
+
+    <form id="formulaire-reglages" class="formulaire-reglages">
+      <fieldset>
+        <legend>Texte</legend>
+        <div class="champ">
+          <label for="reglage-police">Police</label>
+          <select id="reglage-police" data-reglage="police">
+            <option value="atkinson">Atkinson Hyperlegible (très lisible)</option>
+            <option value="lexend">Lexend (lecture fluide)</option>
+            <option value="literata">Literata (avec empattements)</option>
+            <option value="robotomono">Roboto Mono (chasse fixe)</option>
+            <option value="opendyslexic">OpenDyslexic (dyslexie)</option>
+            <option value="systeme">Police du système</option>
+          </select>
+        </div>
+        <div class="champ">
+          <label for="reglage-taille">Taille du texte <output data-valeur-reglage="taillePolice"></output></label>
+          <input id="reglage-taille" type="range" min="16" max="140" step="2" data-reglage="taillePolice">
+        </div>
+        <label class="case"><input type="checkbox" data-reglage="gras"> Texte en gras</label>
+        <fieldset class="segments">
+          <legend>Alignement</legend>
+          <label><input type="radio" name="alignement" value="gauche" data-reglage="alignement"> Gauche</label>
+          <label><input type="radio" name="alignement" value="centre" data-reglage="alignement"> Centré</label>
+        </fieldset>
+        <div class="champ">
+          <label for="reglage-largeur">Largeur de la zone de texte <output data-valeur-reglage="largeurTexte"></output></label>
+          <input id="reglage-largeur" type="range" min="40" max="100" step="2" data-reglage="largeurTexte">
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Couleurs</legend>
+        <div class="rangee-couleurs">
+          <div class="champ champ-couleur">
+            <label for="reglage-couleur-texte">Texte</label>
+            <input id="reglage-couleur-texte" type="color" data-reglage="couleurTexte">
+          </div>
+          <div class="champ champ-couleur">
+            <label for="reglage-couleur-fond">Fond</label>
+            <input id="reglage-couleur-fond" type="color" data-reglage="couleurFond">
+          </div>
+        </div>
+        <div class="champ">
+          <label for="reglage-opacite">Opacité du fond <output data-valeur-reglage="opaciteFond"></output></label>
+          <input id="reglage-opacite" type="range" min="0" max="100" step="5" data-reglage="opaciteFond">
+          <small class="texte-doux">0 % = fond transparent (la caméra reste bien visible), 100 % = fond opaque.</small>
+        </div>
+        <div class="rangee-boutons rangee-presets" aria-label="Combinaisons toutes prêtes">
+          <button class="bouton bouton-petit preset preset-blanc-noir" type="button" data-preset="blanc-noir">Blanc sur noir</button>
+          <button class="bouton bouton-petit preset preset-jaune-noir" type="button" data-preset="jaune-noir">Jaune sur noir</button>
+          <button class="bouton bouton-petit preset preset-noir-blanc" type="button" data-preset="noir-blanc">Noir sur blanc</button>
+          <button class="bouton bouton-petit preset preset-transparent" type="button" data-preset="transparent">Transparent</button>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Défilement</legend>
+        <div class="champ">
+          <label for="reglage-vitesse">Vitesse <output data-valeur-reglage="vitesse"></output></label>
+          <input id="reglage-vitesse" type="range" min="40" max="300" step="5" data-reglage="vitesse">
+          <small class="texte-doux">Un débit de parole naturel se situe entre 130 et 160 mots par minute.</small>
+        </div>
+        <label class="case"><input type="checkbox" data-reglage="repereLecture"> Afficher le repère de lecture</label>
+        <div class="champ">
+          <label for="reglage-position">Hauteur du repère <output data-valeur-reglage="positionLecture"></output></label>
+          <input id="reglage-position" type="range" min="10" max="70" step="5" data-reglage="positionLecture">
+          <small class="texte-doux">Placez-le près du haut de l'écran, proche de l'objectif : votre regard paraîtra plus direct.</small>
+        </div>
+        <label class="case"><input type="checkbox" data-reglage="miroirTexte"> Texte en miroir (prompteur à vitre réfléchissante)</label>
+        <label class="case"><input type="checkbox" data-reglage="lancerAvecEnregistrement"> Lancer le défilement au démarrage de l'enregistrement</label>
+        <div class="champ">
+          <label for="reglage-decompte">Décompte avant l'enregistrement</label>
+          <select id="reglage-decompte" data-reglage="decompte">
+            <option value="0">Aucun</option>
+            <option value="3">3 secondes</option>
+            <option value="5">5 secondes</option>
+            <option value="10">10 secondes</option>
+          </select>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Caméra et micro</legend>
+        <div class="champ">
+          <label for="reglage-qualite">Qualité vidéo</label>
+          <select id="reglage-qualite" data-reglage="qualiteVideo">
+            <option value="720">Standard 720p (≈ 25 Mo par minute, plus léger)</option>
+            <option value="1080">Haute 1080p (≈ 45 Mo par minute)</option>
+          </select>
+        </div>
+        <label class="case"><input type="checkbox" data-reglage="miroirApercu"> Aperçu en miroir pour la caméra avant (la vidéo enregistrée n'est pas inversée)</label>
+        <label class="case"><input type="checkbox" data-reglage="apercuRemplir"> Aperçu plein écran (rogne les bords : le cadre exact n'est plus visible)</label>
+        <label class="case"><input type="checkbox" data-reglage="traitementAudio"> Réduction automatique du bruit et du volume du micro</label>
+      </fieldset>
+
+      <button id="bouton-reinitialiser-reglages" class="bouton bouton-secondaire bouton-large" type="button">
+        Rétablir les réglages par défaut
+      </button>
+    </form>
+  </section>
+
+  <!-- =====================================================================
+       ÉCRAN 5 : MES ENREGISTREMENTS
+       ===================================================================== -->
+  <section id="ecran-enregistrements" class="ecran" data-ecran="enregistrements" hidden>
+    <header class="barre-ecran">
+      <button class="bouton-icone" type="button" data-action="retour" aria-label="Retour" title="Retour">
+        <svg class="icone"><use href="#i-retour"></use></svg>
+      </button>
+      <h1>Mes enregistrements</h1>
+    </header>
+
+    <div class="onglets" role="tablist" aria-label="Type d'enregistrement">
+      <button class="onglet" type="button" role="tab" data-filtre="video" aria-selected="true">
+        <svg class="icone"><use href="#i-camera"></use></svg> Vidéos
+      </button>
+      <button class="onglet" type="button" role="tab" data-filtre="audio" aria-selected="false">
+        <svg class="icone"><use href="#i-micro"></use></svg> Audio
+      </button>
+    </div>
+
+    <p id="espace-stockage" class="texte-doux"></p>
+    <ul id="liste-enregistrements" class="liste"></ul>
+    <p id="enregistrements-vide" class="liste-vide" hidden></p>
+  </section>
+
+  <!-- =====================================================================
+       ÉCRAN 6 : LE PROMPTEUR (commun aux modes Vidéaste et Podcast)
+       Empilement des calques, du fond vers l'avant :
+         1. la vidéo de la caméra (mode Vidéaste) ou un fond sombre (Podcast)
+         2. le calque de texte défilant, avec son fond réglable
+         3. les barres de commandes
+       La vidéo enregistrée ne contient QUE le flux de la caméra : le texte
+       n'est qu'un élément de la page posé par-dessus, il n'est jamais filmé.
+       ===================================================================== -->
+  <section id="ecran-prompteur" class="ecran-prompteur zone-prompteur" data-ecran="prompteur" data-mode="videaste" hidden>
+    <video id="video-camera" class="video-camera" playsinline muted autoplay></video>
+    <div class="fond-podcast" aria-hidden="true">
+      <svg class="icone"><use href="#i-micro"></use></svg>
+    </div>
+
+    <div id="calque-texte" class="calque-texte">
+      <!-- La « fenêtre » est la zone visible ; le texte glisse à l'intérieur. -->
+      <div id="fenetre-texte" class="fenetre-texte">
+        <div id="texte-defilant" class="texte-defilant texte-prompteur"></div>
+      </div>
+      <div class="repere-lecture" aria-hidden="true"></div>
+    </div>
+
+    <div id="message-media" class="message-media" role="alert" hidden>
+      <h2 id="message-media-titre"></h2>
+      <p id="message-media-texte"></p>
+      <div class="rangee-boutons">
+        <button id="bouton-reessayer-media" class="bouton bouton-primaire" type="button">Réessayer</button>
+        <button id="bouton-fermer-message-media" class="bouton bouton-secondaire" type="button">Continuer sans</button>
+      </div>
+    </div>
+
+    <div id="decompte" class="decompte" hidden>
+      <span id="decompte-chiffre" class="decompte-chiffre">3</span>
+      <span class="decompte-aide">Touchez l'écran pour annuler</span>
+    </div>
+
+    <header class="prompteur-haut">
+      <button id="bouton-quitter-prompteur" class="bouton-icone" type="button" aria-label="Quitter le prompteur" title="Quitter (Échap)">
+        <svg class="icone"><use href="#i-retour"></use></svg>
+      </button>
+      <div id="indicateur-enregistrement" class="indicateur-enregistrement" hidden>
+        <span class="point-rec" aria-hidden="true"></span>
+        <span id="chrono">00:00</span>
+      </div>
+      <div class="niveau-micro" title="Niveau du micro" aria-hidden="true">
+        <div id="niveau-micro-barre" class="niveau-micro-barre"></div>
+      </div>
+      <span id="info-resolution" class="info-resolution"></span>
+      <div class="groupe-boutons-haut">
+        <button id="bouton-masquer-texte" class="bouton-icone mode-videaste-seulement" type="button" aria-pressed="false" aria-label="Masquer le texte" title="Masquer / afficher le texte (M)">
+          <svg class="icone"><use href="#i-oeil"></use></svg>
+        </button>
+        <button id="bouton-changer-camera" class="bouton-icone mode-videaste-seulement" type="button" hidden aria-label="Changer de caméra" title="Caméra avant / arrière">
+          <svg class="icone"><use href="#i-changer-camera"></use></svg>
+        </button>
+        <button id="bouton-reglages-rapides" class="bouton-icone" type="button" aria-expanded="false" aria-controls="panneau-reglages-rapides" aria-label="Réglages rapides" title="Réglages rapides">
+          <svg class="icone"><use href="#i-reglages"></use></svg>
+        </button>
+        <button id="bouton-plein-ecran" class="bouton-icone" type="button" aria-label="Plein écran" title="Plein écran (F)">
+          <svg class="icone"><use href="#i-plein-ecran"></use></svg>
+        </button>
+      </div>
+    </header>
+
+    <div id="panneau-reglages-rapides" class="panneau-rapide" hidden>
+      <div class="champ">
+        <label for="rapide-vitesse">Vitesse <output data-valeur-reglage="vitesse"></output></label>
+        <input id="rapide-vitesse" type="range" min="40" max="300" step="5" data-reglage="vitesse">
+      </div>
+      <div class="champ">
+        <label for="rapide-taille">Taille <output data-valeur-reglage="taillePolice"></output></label>
+        <input id="rapide-taille" type="range" min="16" max="140" step="2" data-reglage="taillePolice">
+      </div>
+      <div class="champ">
+        <label for="rapide-opacite">Opacité du fond <output data-valeur-reglage="opaciteFond"></output></label>
+        <input id="rapide-opacite" type="range" min="0" max="100" step="5" data-reglage="opaciteFond">
+      </div>
+      <div class="champ">
+        <label for="rapide-position">Hauteur du repère <output data-valeur-reglage="positionLecture"></output></label>
+        <input id="rapide-position" type="range" min="10" max="70" step="5" data-reglage="positionLecture">
+      </div>
+      <div class="rangee-couleurs">
+        <div class="champ champ-couleur">
+          <label for="rapide-couleur-texte">Texte</label>
+          <input id="rapide-couleur-texte" type="color" data-reglage="couleurTexte">
+        </div>
+        <div class="champ champ-couleur">
+          <label for="rapide-couleur-fond">Fond</label>
+          <input id="rapide-couleur-fond" type="color" data-reglage="couleurFond">
+        </div>
+      </div>
+      <fieldset class="segments">
+        <legend>Alignement</legend>
+        <label><input type="radio" name="alignement-rapide" value="gauche" data-reglage="alignement"> Gauche</label>
+        <label><input type="radio" name="alignement-rapide" value="centre" data-reglage="alignement"> Centré</label>
+      </fieldset>
+      <label class="case"><input type="checkbox" data-reglage="miroirTexte"> Texte en miroir</label>
+    </div>
+
+    <footer class="prompteur-bas">
+      <div class="progression" aria-hidden="true">
+        <div id="barre-progression" class="barre-progression"></div>
+      </div>
+      <div class="commandes">
+        <div class="groupe-commandes groupe-lecture">
+          <button id="bouton-debut" class="bouton-icone" type="button" aria-label="Retour au début" title="Retour au début (Début)">
+            <svg class="icone"><use href="#i-debut"></use></svg>
+          </button>
+          <button id="bouton-reculer" class="bouton-icone" type="button" aria-label="Reculer dans le texte" title="Reculer (↑)">
+            <svg class="icone"><use href="#i-reculer"></use></svg>
+          </button>
+          <button id="bouton-lecture" class="bouton-icone bouton-lecture" type="button" aria-label="Lancer le défilement" title="Lecture / pause (Espace)">
+            <svg class="icone"><use href="#i-lecture"></use></svg>
+          </button>
+          <button id="bouton-avancer" class="bouton-icone" type="button" aria-label="Avancer dans le texte" title="Avancer (↓)">
+            <svg class="icone"><use href="#i-avancer"></use></svg>
+          </button>
+          <div class="vitesse-rapide">
+            <button id="bouton-vitesse-moins" class="bouton-icone bouton-petit-rond" type="button" aria-label="Ralentir" title="Ralentir (−)">
+              <svg class="icone"><use href="#i-moins"></use></svg>
+            </button>
+            <output id="valeur-vitesse-rapide" class="valeur-vitesse" data-valeur-reglage="vitesse"></output>
+            <button id="bouton-vitesse-plus" class="bouton-icone bouton-petit-rond" type="button" aria-label="Accélérer" title="Accélérer (+)">
+              <svg class="icone"><use href="#i-plus"></use></svg>
+            </button>
+          </div>
+          <span id="temps-restant" class="temps-restant"></span>
+        </div>
+
+        <div class="groupe-commandes groupe-enregistrement">
+          <button id="bouton-enregistrer" class="bouton bouton-rec" type="button">
+            <svg class="icone"><use href="#i-rec"></use></svg> <span>Enregistrer</span>
+          </button>
+          <button id="bouton-pause-enregistrement" class="bouton bouton-secondaire" type="button" hidden>
+            <svg class="icone"><use href="#i-pause"></use></svg> <span>Pause</span>
+          </button>
+          <button id="bouton-arreter-enregistrement" class="bouton bouton-secondaire" type="button" hidden>
+            <svg class="icone"><use href="#i-stop"></use></svg> <span>Arrêter</span>
+          </button>
+          <button id="bouton-voir-enregistrements" class="bouton-icone" type="button" aria-label="Voir mes enregistrements" title="Mes enregistrements">
+            <svg class="icone"><use href="#i-liste"></use></svg>
+          </button>
+        </div>
+      </div>
+    </footer>
+  </section>
+
+  <!-- =====================================================================
+       BOÎTES DE DIALOGUE
+       La balise <dialog> est native : le navigateur gère l'affichage par-dessus
+       la page, la touche Échap et le blocage de l'arrière-plan.
+       ===================================================================== -->
+  <dialog id="dialogue-confirmation" class="dialogue">
+    <form method="dialog">
+      <h2 id="confirmation-titre"></h2>
+      <p id="confirmation-message"></p>
+      <div class="rangee-boutons rangee-boutons-fin">
+        <button class="bouton bouton-secondaire" type="button" data-action="annuler-dialogue">Annuler</button>
+        <button id="confirmation-ok" class="bouton bouton-danger" value="ok">Confirmer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dialogue-saisie" class="dialogue">
+    <form method="dialog">
+      <h2 id="saisie-titre"></h2>
+      <div class="champ">
+        <label for="saisie-champ" id="saisie-etiquette">Nom</label>
+        <input id="saisie-champ" type="text" maxlength="120" autocomplete="off">
+      </div>
+      <div class="rangee-boutons rangee-boutons-fin">
+        <button class="bouton bouton-secondaire" type="button" data-action="annuler-dialogue">Annuler</button>
+        <button class="bouton bouton-primaire" value="ok">Valider</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dialogue-media" class="dialogue dialogue-media">
+    <div class="entete-dialogue">
+      <h2 id="media-titre">Enregistrement</h2>
+      <button id="media-fermer" class="bouton-icone" type="button" aria-label="Fermer">
+        <svg class="icone"><use href="#i-fermer"></use></svg>
+      </button>
+    </div>
+    <div id="media-lecteur" class="media-lecteur"></div>
+    <div class="champ">
+      <label for="media-nom">Nom de l'enregistrement</label>
+      <input id="media-nom" type="text" maxlength="120" autocomplete="off">
+    </div>
+    <p id="media-infos" class="texte-doux"></p>
+    <div class="rangee-boutons">
+      <button id="media-telecharger" class="bouton bouton-primaire" type="button">
+        <svg class="icone"><use href="#i-telecharger"></use></svg> <span id="media-telecharger-texte">Télécharger</span>
+      </button>
+      <button id="media-partager" class="bouton bouton-secondaire" type="button" hidden>
+        <svg class="icone"><use href="#i-partager"></use></svg> Partager
+      </button>
+      <button id="media-wav" class="bouton bouton-secondaire" type="button" hidden>
+        <svg class="icone"><use href="#i-onde"></use></svg> Télécharger en .wav
+      </button>
+      <button id="media-supprimer" class="bouton bouton-danger" type="button">
+        <svg class="icone"><use href="#i-corbeille"></use></svg> Supprimer
+      </button>
+    </div>
+  </dialog>
+
+  <!-- Bandeau affiché quand une nouvelle version de l'application est prête. -->
+  <div id="bandeau-mise-a-jour" class="bandeau-mise-a-jour" role="status" hidden>
+    <span>Une nouvelle version est disponible.</span>
+    <button id="bouton-mettre-a-jour" class="bouton bouton-primaire bouton-petit" type="button">Mettre à jour</button>
+  </div>
+
+  <!-- Petites notifications temporaires (« Script enregistré », etc.).
+       aria-live : les lecteurs d'écran annoncent leur contenu. -->
+  <div id="zone-notifications" class="zone-notifications" aria-live="polite"></div>
+
+  <noscript>
+    <p class="noscript">Prompteur Créateurs a besoin de JavaScript pour fonctionner.</p>
+  </noscript>
+</body>
+</html>

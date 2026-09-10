@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Icône de Prompteur Créateurs : trois lignes de texte, celle du milieu
+       (la ligne en cours de lecture) en couleur, un repère triangulaire et
+       un point rouge d'enregistrement. Source des icônes PNG. -->
+  <defs>
+    <linearGradient id="fond" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#262c3d"/>
+      <stop offset="1" stop-color="#0e1014"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#fond)"/>
+  <g id="motif">
+    <rect x="136" y="150" width="200" height="36" rx="18" fill="#ffffff" fill-opacity="0.3"/>
+    <rect x="136" y="238" width="260" height="36" rx="18" fill="#ffb454"/>
+    <rect x="136" y="326" width="170" height="36" rx="18" fill="#ffffff" fill-opacity="0.3"/>
+    <path d="M84 228 L118 256 L84 284 Z" fill="#ffb454"/>
+    <circle cx="394" cy="168" r="30" fill="#ff4d5e"/>
+  </g>
+</svg>

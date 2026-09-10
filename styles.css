@@ -1,0 +1,1580 @@
+/* =========================================================================
+   Prompteur Créateurs — feuille de styles
+   -------------------------------------------------------------------------
+   Sommaire
+     1. Polices intégrées (fichiers locaux, aucun appel à Google Fonts)
+     2. Variables : couleurs, tailles, réglages du prompteur
+     3. Bases communes
+     4. Boutons
+     5. Écrans ordinaires (accueil, bibliothèque, éditeur, réglages…)
+     6. Formulaires
+     7. Listes (scripts, enregistrements)
+     8. Zone de prompteur (partagée par l'aperçu des réglages et le prompteur)
+     9. Écran du prompteur : calques, barres de commandes, panneau rapide
+    10. Boîtes de dialogue, notifications, bandeau de mise à jour
+    11. Adaptations : paysage, grands écrans
+   ========================================================================= */
+
+
+/* 1. POLICES INTÉGRÉES ====================================================
+   Les fichiers .woff2 sont dans le dossier fonts/. Ce sont des polices
+   « variables » : un seul fichier contient toutes les graisses (du fin au
+   gras), d'où la plage « font-weight: 200 800 ».
+   font-display: swap affiche immédiatement le texte avec une police de
+   secours, puis bascule dès que la vraie police est prête. */
+
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  src: url("fonts/atkinson-hyperlegible-next.woff2") format("woff2");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Lexend";
+  src: url("fonts/lexend.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Literata";
+  src: url("fonts/literata.woff2") format("woff2");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Roboto Mono";
+  src: url("fonts/roboto-mono.woff2") format("woff2");
+  font-weight: 100 700;
+  font-style: normal;
+  font-display: swap;
+}
+/* OpenDyslexic n'existe pas en version variable : un fichier par graisse. */
+@font-face {
+  font-family: "OpenDyslexic";
+  src: url("fonts/opendyslexic-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "OpenDyslexic";
+  src: url("fonts/opendyslexic-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+/* 2. VARIABLES ============================================================
+   Une « variable CSS » (--nom) se définit une fois et se réutilise partout
+   avec var(--nom). Changer une couleur ici la change dans toute l'appli. */
+
+:root {
+  color-scheme: dark;
+
+  --fond: #0e1014;
+  --surface: #171a21;
+  --surface-2: #20242e;
+  --surface-3: #2a2f3b;
+  --bordure: #323847;
+  --texte: #f1f3f7;
+  --texte-doux: #a6adbb;
+  --accent: #ffb454;
+  --accent-clair: #ffc678;
+  --sur-accent: #1d1506;
+  --rec: #ff4d5e;
+  --danger: #ff7070;
+  --succes: #3ecf8e;
+
+  --rayon: 16px;
+  --rayon-petit: 10px;
+  --ombre: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --police-interface: "Atkinson Hyperlegible Next", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Marges de sécurité des téléphones à encoche (0 sur les autres écrans). */
+  --sur-haut: env(safe-area-inset-top, 0px);
+  --sur-droite: env(safe-area-inset-right, 0px);
+  --sur-bas: env(safe-area-inset-bottom, 0px);
+  --sur-gauche: env(safe-area-inset-left, 0px);
+
+  /* Réglages du prompteur. Ce sont des valeurs de départ : app.js les
+     remplace selon les choix de l'utilisateur (voir appliquerReglages). */
+  --prompteur-police: var(--police-interface);
+  --prompteur-taille: 44px;
+  --prompteur-graisse: 400;
+  --prompteur-couleur: #ffffff;
+  --prompteur-fond: rgba(0, 0, 0, 0.55);
+  --prompteur-alignement: left;
+  --prompteur-largeur: 92%;
+  --position-lecture: 30%;
+}
+
+
+/* 3. BASES COMMUNES ======================================================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box; /* la largeur d'un élément inclut ses bordures */
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh; /* dvh : hauteur réellement visible sur mobile */
+  background: var(--fond);
+  color: var(--texte);
+  font-family: var(--police-interface);
+  font-size: 1rem;
+  line-height: 1.5;
+  -webkit-tap-highlight-color: transparent; /* pas de flash bleu au toucher */
+}
+
+/* L'attribut hidden doit toujours l'emporter, même sur un display: flex. */
+[hidden] {
+  display: none !important;
+}
+
+h1,
+h2 {
+  margin: 0;
+  line-height: 1.2;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button,
+label[for],
+select {
+  cursor: pointer;
+}
+
+/* Contour bien visible pour la navigation au clavier. */
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* La bibliothèque d'icônes ne doit prendre aucune place à l'écran. */
+.sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* Une icône suit la taille et la couleur du texte qui l'entoure. */
+.icone {
+  width: 1.35em;
+  height: 1.35em;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: middle;
+}
+
+/* Caché à l'écran mais toujours utilisable (ex. : le champ d'import). */
+.visuellement-cache {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.texte-doux {
+  margin: 0;
+  color: var(--texte-doux);
+}
+
+small {
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.noscript {
+  margin: 40px 20px;
+  text-align: center;
+}
+
+
+/* 4. BOUTONS ============================================================== */
+
+.bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px; /* au moins 44 px : taille confortable pour un doigt */
+  padding: 10px 18px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  user-select: none;
+  transition: background-color 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.bouton:active {
+  transform: scale(0.97);
+}
+
+.bouton-primaire {
+  background: var(--accent);
+  color: var(--sur-accent);
+}
+
+.bouton-primaire:hover {
+  background: var(--accent-clair);
+}
+
+.bouton-secondaire {
+  background: var(--surface-2);
+  border-color: var(--bordure);
+  color: var(--texte);
+}
+
+.bouton-secondaire:hover {
+  background: var(--surface-3);
+}
+
+.bouton-danger {
+  background: transparent;
+  border-color: rgba(255, 112, 112, 0.55);
+  color: var(--danger);
+}
+
+.bouton-danger:hover {
+  background: rgba(255, 112, 112, 0.12);
+}
+
+.bouton-petit {
+  min-height: 38px;
+  padding: 6px 14px;
+  font-size: 0.9rem;
+}
+
+.bouton-large {
+  width: 100%;
+}
+
+.bouton:disabled,
+.bouton-icone:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Bouton rond ne contenant qu'une icône. */
+.bouton-icone {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--texte);
+  transition: background-color 0.15s, transform 0.1s;
+}
+
+.bouton-icone:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.bouton-icone:active {
+  transform: scale(0.94);
+}
+
+/* Bouton « enfoncé » (ex. : texte masqué). */
+.bouton-icone[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--sur-accent);
+}
+
+.rangee-boutons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.rangee-boutons-fin {
+  justify-content: flex-end;
+}
+
+
+/* 5. ÉCRANS ORDINAIRES ==================================================== */
+
+.ecran {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 760px;
+  margin: 0 auto;
+  padding:
+    calc(16px + var(--sur-haut))
+    calc(16px + var(--sur-droite))
+    calc(32px + var(--sur-bas))
+    calc(16px + var(--sur-gauche));
+}
+
+.barre-ecran {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+}
+
+.barre-ecran h1 {
+  flex: 1;
+  font-size: 1.35rem;
+}
+
+.etat-sauvegarde {
+  font-size: 0.85rem;
+  color: var(--texte-doux);
+  white-space: nowrap;
+}
+
+/* --- Accueil --- */
+
+.entete-accueil {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-top: 6px;
+}
+
+.entete-accueil h1 {
+  font-size: clamp(1.5rem, 5.5vw, 2rem);
+}
+
+.logo {
+  flex: none;
+  border-radius: 14px;
+}
+
+.sous-titre {
+  margin: 2px 0 0;
+  color: var(--texte-doux);
+}
+
+.carte {
+  padding: 16px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  background: var(--surface);
+}
+
+.etiquette {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--texte-doux);
+}
+
+.script-actif-titre {
+  margin: 6px 0 2px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.carte-script-actif .rangee-boutons {
+  margin-top: 12px;
+}
+
+.choix-mode {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.carte-mode {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-height: 160px;
+  padding: 18px 16px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  background: linear-gradient(160deg, var(--surface-2), var(--surface));
+  text-align: left;
+  transition: border-color 0.15s, transform 0.1s;
+}
+
+.carte-mode:hover {
+  border-color: var(--accent);
+}
+
+.carte-mode:active {
+  transform: scale(0.98);
+}
+
+.icone-mode {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 4px;
+  color: var(--accent);
+}
+
+#bouton-mode-videaste .icone-mode {
+  color: var(--rec);
+}
+
+.carte-mode-titre {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.carte-mode-texte {
+  font-size: 0.9rem;
+  line-height: 1.35;
+  color: var(--texte-doux);
+}
+
+.menu-accueil {
+  display: grid;
+  gap: 8px;
+}
+
+.bouton-menu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 16px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  background: var(--surface);
+  font-weight: 700;
+  text-align: left;
+}
+
+.bouton-menu:hover {
+  background: var(--surface-2);
+}
+
+.bouton-menu .icone {
+  color: var(--accent);
+}
+
+.mention-confidentialite {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: var(--texte-doux);
+}
+
+/* --- Éditeur --- */
+
+.astuce {
+  margin: 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--rayon-petit) var(--rayon-petit) 0;
+  background: var(--surface);
+  font-size: 0.88rem;
+  color: var(--texte-doux);
+}
+
+/* --- Onglets (Mes enregistrements) --- */
+
+.onglets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid var(--bordure);
+  border-radius: 999px;
+  background: var(--surface);
+}
+
+.onglet {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--texte-doux);
+  font-weight: 700;
+}
+
+.onglet[aria-selected="true"] {
+  background: var(--accent);
+  color: var(--sur-accent);
+}
+
+
+/* 6. FORMULAIRES ========================================================== */
+
+.champ {
+  display: grid;
+  gap: 6px;
+}
+
+.champ > label {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+output {
+  color: var(--accent);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums; /* chiffres de largeur égale : pas de tremblement */
+  white-space: nowrap;
+}
+
+input[type="text"],
+input[type="search"],
+select,
+textarea {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 14px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-petit);
+  background: var(--surface-2);
+  color: var(--texte);
+}
+
+textarea {
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.champ-texte-script textarea {
+  min-height: 45dvh;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #7f8697;
+}
+
+input[type="text"]:focus,
+input[type="search"]:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 180, 84, 0.25);
+}
+
+/* accent-color colore les curseurs, cases et boutons radio natifs. */
+input[type="range"] {
+  width: 100%;
+  height: 30px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+input[type="color"] {
+  width: 100%;
+  height: 46px;
+  padding: 4px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-petit);
+  background: var(--surface-2);
+  cursor: pointer;
+}
+
+.case {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 4px 0;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+.case input {
+  margin-top: 1px;
+}
+
+.formulaire-reglages {
+  display: grid;
+  gap: 16px;
+}
+
+.formulaire-reglages > fieldset {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 12px 16px 16px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  background: var(--surface);
+}
+
+.formulaire-reglages > fieldset > legend {
+  padding: 0 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* Groupe de choix présentés comme des « pastilles » (Gauche / Centré). */
+.segments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.segments legend {
+  margin-bottom: 6px;
+  padding: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.segments label {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--bordure);
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.segments label:has(input:checked) {
+  border-color: var(--accent);
+  background: rgba(255, 180, 84, 0.14);
+}
+
+.rangee-couleurs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Boutons de combinaisons de couleurs toutes prêtes. */
+.preset-blanc-noir {
+  border-color: #454a55;
+  background: #000000;
+  color: #ffffff;
+}
+
+.preset-jaune-noir {
+  border-color: #454a55;
+  background: #000000;
+  color: #ffe066;
+}
+
+.preset-noir-blanc {
+  background: #ffffff;
+  color: #000000;
+}
+
+.preset-transparent {
+  border-color: var(--bordure);
+  background: repeating-conic-gradient(#3b404c 0 25%, #262a33 0 50%) 0 0 / 14px 14px;
+  color: #ffffff;
+}
+
+
+/* 7. LISTES =============================================================== */
+
+.liste {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.element-liste {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  background: var(--surface);
+}
+
+.element-liste.est-actif {
+  border-color: var(--accent);
+  box-shadow: inset 4px 0 0 var(--accent);
+}
+
+.element-titre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.badge {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--sur-accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.badge-discret {
+  background: var(--surface-3);
+  color: var(--texte-doux);
+}
+
+/* Aperçu du texte limité à deux lignes, terminé par « … ». */
+.element-extrait {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  font-size: 0.92rem;
+  color: var(--texte-doux);
+  overflow-wrap: anywhere;
+}
+
+.element-meta {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--texte-doux);
+}
+
+.element-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.liste-vide {
+  margin: 0;
+  padding: 32px 16px;
+  border: 1px dashed var(--bordure);
+  border-radius: var(--rayon);
+  text-align: center;
+  color: var(--texte-doux);
+}
+
+.champ-recherche {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.champ-recherche .icone {
+  position: absolute;
+  left: 14px;
+  color: var(--texte-doux);
+  pointer-events: none;
+}
+
+.champ-recherche input {
+  padding-left: 46px;
+}
+
+.etat-import {
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-petit);
+  background: var(--surface-2);
+}
+
+/* 8. ZONE DE PROMPTEUR ====================================================
+   Ces règles servent à la fois au vrai prompteur et à l'aperçu de l'écran
+   Réglages : ce que l'on voit dans l'aperçu est exactement ce que l'on
+   obtiendra pendant la lecture. */
+
+.zone-prompteur {
+  position: relative;
+  overflow: hidden;
+  background: #000000;
+}
+
+/* Le calque qui porte le texte ET son fond coloré (opacité réglable). */
+.calque-texte {
+  position: absolute;
+  inset: 0;
+  isolation: isolate; /* le calque a sa propre « pile » d'affichage (voir le repère plus bas) */
+  background: var(--prompteur-fond);
+}
+
+/* Texte en miroir : on retourne tout le calque horizontalement. On ne peut
+   pas retourner le texte lui-même, car sa propriété transform sert déjà au
+   défilement (voir app.js). */
+.zone-prompteur[data-miroir-texte="oui"] .calque-texte {
+  transform: scaleX(-1);
+}
+
+.texte-prompteur {
+  /* Au moins 24 px de marge de chaque côté : le triangle du repère de
+     lecture ne chevauche jamais le début des lignes. */
+  width: min(var(--prompteur-largeur), calc(100% - 48px));
+  margin: 0 auto;
+  font-family: var(--prompteur-police);
+  font-size: var(--prompteur-taille);
+  font-weight: var(--prompteur-graisse);
+  line-height: 1.4;
+  color: var(--prompteur-couleur);
+  text-align: var(--prompteur-alignement);
+  overflow-wrap: break-word; /* coupe un mot trop long plutôt que de déborder */
+}
+
+.texte-prompteur p {
+  margin: 0 0 0.8em;
+}
+
+/* Contour sombre autour des lettres quand le fond est très transparent :
+   le texte reste lisible même devant une image claire. */
+.zone-prompteur[data-ombre-texte="oui"] .texte-prompteur {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 14px rgba(0, 0, 0, 0.7);
+}
+
+/* Les [indications] entre crochets : plus petites et atténuées. */
+.indication {
+  font-size: 0.75em;
+  font-style: italic;
+  opacity: 0.55;
+}
+
+/* Repère de lecture : un triangle et un bandeau lumineux derrière la ligne
+   à lire, à la hauteur choisie. On le décale d'une demi-ligne (0,7 × la
+   taille, car l'interligne vaut 1,4) pour qu'il vise le milieu de la ligne.
+   z-index: -1 le glisse DERRIÈRE le texte mais devant le fond du calque
+   (grâce à « isolation: isolate » sur .calque-texte) : le bandeau éclaire la
+   ligne sans jamais rayer les lettres. */
+
+.repere-lecture {
+  position: absolute;
+  top: calc(var(--position-lecture) + var(--prompteur-taille) * 0.7);
+  left: 0;
+  right: 0;
+  z-index: -1;
+  height: 0;
+  pointer-events: none;
+}
+
+.repere-lecture::before {
+  content: "";
+  position: absolute;
+  top: -13px;
+  left: 0;
+  border-top: 13px solid transparent;
+  border-bottom: 13px solid transparent;
+  border-left: 18px solid var(--accent);
+}
+
+.repere-lecture::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--prompteur-taille) * -0.7);
+  left: 0;
+  right: 0;
+  height: calc(var(--prompteur-taille) * 1.4); /* exactement une ligne */
+  background: linear-gradient(90deg, rgba(255, 180, 84, 0.22), rgba(255, 180, 84, 0.07) 60%, rgba(255, 180, 84, 0));
+}
+
+.zone-prompteur[data-repere="non"] .repere-lecture {
+  display: none;
+}
+
+/* --- Aperçu de l'écran Réglages --- */
+
+.apercu-reglages {
+  position: sticky; /* reste visible pendant qu'on fait défiler les réglages */
+  top: calc(8px + var(--sur-haut));
+  z-index: 3;
+  flex: none;
+  height: clamp(150px, 28dvh, 280px);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  /* Faux « décor filmé » : permet de juger l'effet de la transparence. */
+  background: linear-gradient(135deg, #5a6b82 0%, #25303f 45%, #6e5238 100%);
+}
+
+.apercu-texte {
+  position: absolute;
+  top: var(--position-lecture);
+  left: 0;
+  right: 0;
+}
+
+
+/* 9. ÉCRAN DU PROMPTEUR =================================================== */
+
+body.prompteur-actif {
+  overflow: hidden; /* la page derrière le prompteur ne doit pas bouger */
+}
+
+.ecran-prompteur {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+}
+
+/* --- Calque 1 : caméra (Vidéaste) ou fond sombre (Podcast) --- */
+
+.video-camera {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* contain : on voit l'image entière, donc le cadrage EXACT de la vidéo.
+     cover (option « Aperçu plein écran ») remplit l'écran mais rogne les bords. */
+  object-fit: contain;
+  background: #000000;
+}
+
+.ecran-prompteur[data-apercu-remplir="oui"] .video-camera {
+  object-fit: cover;
+}
+
+/* Effet miroir de la caméra avant : seulement à l'écran, jamais dans le fichier. */
+.video-camera.miroir {
+  transform: scaleX(-1);
+}
+
+.fond-podcast {
+  position: absolute;
+  inset: 0;
+  display: none;
+  place-items: center;
+  background: radial-gradient(circle at 50% 40%, #1f2533, #07080b 70%);
+}
+
+.fond-podcast .icone {
+  width: 32vmin;
+  height: 32vmin;
+  stroke-width: 1.2;
+  opacity: 0.07;
+}
+
+.ecran-prompteur[data-mode="podcast"] .video-camera,
+.ecran-prompteur[data-mode="podcast"] .mode-videaste-seulement {
+  display: none;
+}
+
+.ecran-prompteur[data-mode="podcast"] .fond-podcast {
+  display: grid;
+}
+
+/* --- Calque 2 : texte défilant --- */
+
+.ecran-prompteur .calque-texte {
+  z-index: 1;
+}
+
+/* « visibility » plutôt que « display » : le texte garde ses dimensions,
+   le défilement peut donc continuer pendant qu'il est masqué. */
+.ecran-prompteur[data-texte-masque="oui"] .calque-texte {
+  visibility: hidden;
+}
+
+.fenetre-texte {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none; /* c'est app.js qui gère le glissement du doigt */
+  cursor: grab;
+  user-select: none;
+}
+
+.fenetre-texte.en-glissement {
+  cursor: grabbing;
+}
+
+.texte-defilant {
+  will-change: transform; /* prévient le navigateur : animation fluide */
+}
+
+/* --- Calque 3 : barres de commandes --- */
+
+.prompteur-haut,
+.prompteur-bas {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  /* La barre elle-même laisse passer les gestes vers le texte ;
+     seuls ses boutons réagissent (règle suivante). */
+  pointer-events: none;
+}
+
+.prompteur-haut > *,
+.prompteur-bas > *,
+.groupe-commandes > *,
+.commandes {
+  pointer-events: auto;
+}
+
+.prompteur-haut {
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: calc(8px + var(--sur-haut)) calc(10px + var(--sur-droite)) 18px calc(10px + var(--sur-gauche));
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0));
+}
+
+.groupe-boutons-haut {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.ecran-prompteur .bouton-icone {
+  width: 44px;
+  height: 44px;
+  background: rgba(22, 24, 30, 0.62);
+  color: #ffffff;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.ecran-prompteur .bouton-icone:hover {
+  background: rgba(52, 56, 66, 0.85);
+}
+
+.ecran-prompteur .bouton-icone[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--sur-accent);
+}
+
+.indicateur-enregistrement {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(230, 50, 70, 0.92);
+  color: #ffffff;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.indicateur-enregistrement.en-pause {
+  background: rgba(60, 64, 74, 0.92);
+}
+
+.point-rec {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ffffff;
+  animation: clignoter 1s steps(2, start) infinite;
+}
+
+.en-pause .point-rec {
+  opacity: 0.6;
+  animation: none;
+}
+
+@keyframes clignoter {
+  to {
+    visibility: hidden;
+  }
+}
+
+/* Vumètre : app.js règle la variable --niveau entre 0 et 1. */
+.niveau-micro {
+  width: 56px;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.niveau-micro-barre {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--succes), var(--accent) 70%, var(--rec));
+  clip-path: inset(0 calc((1 - var(--niveau, 0)) * 100%) 0 0);
+}
+
+.ecran-prompteur[data-micro="non"] .niveau-micro {
+  display: none;
+}
+
+.info-resolution {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.75);
+  white-space: nowrap;
+}
+
+.info-resolution:empty {
+  display: none;
+}
+
+.prompteur-bas {
+  bottom: 0;
+  padding: 22px calc(10px + var(--sur-droite)) calc(10px + var(--sur-bas)) calc(10px + var(--sur-gauche));
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0));
+}
+
+.progression {
+  height: 4px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.barre-progression {
+  height: 100%;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.temps-restant {
+  position: absolute;
+  top: 0;
+  right: calc(12px + var(--sur-droite));
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 2px #000000;
+}
+
+.commandes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 18px;
+}
+
+.groupe-commandes {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ecran-prompteur .bouton-lecture {
+  width: 58px;
+  height: 58px;
+  background: var(--accent);
+  color: var(--sur-accent);
+}
+
+.ecran-prompteur .bouton-lecture:hover {
+  background: var(--accent-clair);
+}
+
+.bouton-lecture .icone {
+  width: 28px;
+  height: 28px;
+}
+
+.vitesse-rapide {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 4px;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(22, 24, 30, 0.62);
+}
+
+.ecran-prompteur .bouton-petit-rond {
+  width: 36px;
+  height: 36px;
+  background: transparent;
+}
+
+.valeur-vitesse {
+  min-width: 3ch;
+  color: #ffffff;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.bouton-rec {
+  background: var(--rec);
+  color: #ffffff;
+}
+
+.bouton-rec:hover {
+  background: #ff6b79;
+}
+
+.bouton-rec .icone {
+  width: 1.1em;
+  height: 1.1em;
+}
+
+/* --- Panneau de réglages rapides --- */
+
+.panneau-rapide {
+  position: absolute;
+  top: calc(64px + var(--sur-haut));
+  right: calc(10px + var(--sur-droite));
+  z-index: 4;
+  display: grid;
+  gap: 12px;
+  width: min(340px, calc(100vw - 20px));
+  max-height: calc(100dvh - 230px - var(--sur-haut) - var(--sur-bas));
+  overflow-y: auto;
+  padding: 14px 16px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  background: rgba(18, 20, 26, 0.95);
+  box-shadow: var(--ombre);
+}
+
+/* --- Message caméra / micro indisponible --- */
+
+.message-media {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 4;
+  display: grid;
+  gap: 10px;
+  width: min(460px, calc(100vw - 32px));
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  padding: 20px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  background: rgba(18, 20, 26, 0.96);
+  box-shadow: var(--ombre);
+  transform: translate(-50%, -50%);
+}
+
+.message-media h2 {
+  font-size: 1.15rem;
+}
+
+.message-media p {
+  margin: 0;
+  color: var(--texte-doux);
+  white-space: pre-line; /* respecte les retours à la ligne du message */
+}
+
+/* --- Décompte avant l'enregistrement --- */
+
+.decompte {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+
+.decompte-chiffre {
+  font-size: min(40vw, 40vh);
+  font-weight: 800;
+  line-height: 1;
+  color: #ffffff;
+  text-shadow: 0 6px 30px rgba(0, 0, 0, 0.6);
+  font-variant-numeric: tabular-nums;
+}
+
+.decompte-chiffre.anime {
+  animation: pulsation 0.9s ease-out;
+}
+
+@keyframes pulsation {
+  from {
+    opacity: 0.3;
+    transform: scale(1.25);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.decompte-aide {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.5);
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+
+/* 10. DIALOGUES, NOTIFICATIONS, MISE À JOUR =============================== */
+
+.dialogue {
+  width: min(540px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  padding: 20px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  background: var(--surface);
+  color: var(--texte);
+  box-shadow: var(--ombre);
+}
+
+.dialogue::backdrop {
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.dialogue form {
+  display: grid;
+  gap: 14px;
+}
+
+.dialogue h2 {
+  font-size: 1.2rem;
+  overflow-wrap: anywhere;
+}
+
+.dialogue p {
+  margin: 0;
+  color: var(--texte-doux);
+  white-space: pre-line;
+}
+
+/* Attention : ne jamais écrire « .dialogue { display: grid } » sans [open],
+   sinon la boîte resterait visible même fermée. */
+.dialogue-media[open] {
+  display: grid;
+  gap: 14px;
+}
+
+.entete-dialogue {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.entete-dialogue h2 {
+  flex: 1;
+}
+
+.media-lecteur video {
+  display: block;
+  width: 100%;
+  max-height: 48dvh;
+  border-radius: var(--rayon-petit);
+  background: #000000;
+}
+
+.media-lecteur audio {
+  display: block;
+  width: 100%;
+}
+
+.zone-notifications {
+  position: fixed;
+  bottom: calc(24px + var(--sur-bas));
+  left: 50%;
+  z-index: 50;
+  display: grid;
+  gap: 8px;
+  width: min(480px, calc(100vw - 24px));
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* Sur le prompteur, les notifications passent en haut pour ne pas masquer
+   les boutons du bas. */
+body.prompteur-actif .zone-notifications {
+  top: calc(70px + var(--sur-haut));
+  bottom: auto;
+}
+
+.notification {
+  padding: 12px 16px;
+  border: 1px solid var(--bordure);
+  border-radius: 12px;
+  background: #262b37;
+  box-shadow: var(--ombre);
+  pointer-events: auto;
+  animation: apparaitre 0.2s ease-out;
+}
+
+.notification-succes {
+  border-color: rgba(62, 207, 142, 0.55);
+}
+
+.notification-erreur {
+  border-color: rgba(255, 112, 112, 0.65);
+  background: #3a1f25;
+}
+
+.notification.disparait {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+@keyframes apparaitre {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.bandeau-mise-a-jour {
+  position: fixed;
+  top: calc(12px + var(--sur-haut));
+  left: 50%;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: max-content;
+  max-width: calc(100vw - 24px);
+  padding: 8px 8px 8px 16px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: var(--surface-2);
+  box-shadow: var(--ombre);
+  transform: translateX(-50%);
+}
+
+.bandeau-mise-a-jour .bouton {
+  flex: none;
+  white-space: nowrap; /* « Mettre à jour » sur une seule ligne */
+}
+
+body.prompteur-actif .bandeau-mise-a-jour {
+  display: none;
+}
+
+
+/* 11. ADAPTATIONS ========================================================= */
+
+/* Très petits téléphones. */
+@media (max-width: 380px) {
+  .choix-mode {
+    grid-template-columns: 1fr;
+  }
+
+  .carte-mode {
+    min-height: 0;
+  }
+
+  .ecran-prompteur .bouton-icone {
+    width: 40px;
+    height: 40px;
+  }
+
+  .ecran-prompteur .bouton-lecture {
+    width: 52px;
+    height: 52px;
+  }
+
+  .niveau-micro {
+    width: 40px;
+  }
+}
+
+/* Téléphone tenu à l'horizontale : peu de hauteur, on resserre les barres. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .prompteur-haut {
+    padding-top: calc(4px + var(--sur-haut));
+    padding-bottom: 10px;
+  }
+
+  .prompteur-bas {
+    padding-top: 16px;
+  }
+
+  .progression {
+    margin-bottom: 6px;
+  }
+
+  .ecran-prompteur .bouton-icone {
+    width: 40px;
+    height: 40px;
+  }
+
+  .ecran-prompteur .bouton-lecture {
+    width: 48px;
+    height: 48px;
+  }
+
+  .panneau-rapide {
+    top: calc(52px + var(--sur-haut));
+    max-height: calc(100dvh - 64px - var(--sur-haut));
+  }
+
+  .apercu-reglages {
+    position: relative;
+    top: 0;
+  }
+}
+
+/* Grands écrans : les commandes de lecture à gauche, l'enregistrement à droite. */
+@media (min-width: 900px) {
+  .commandes {
+    justify-content: space-between;
+  }
+}
+
+/* Si l'utilisateur a demandé moins d'animations dans son système. */
+@media (prefers-reduced-motion: reduce) {
+  .point-rec,
+  .decompte-chiffre.anime,
+  .notification {
+    animation: none;
+  }
+}

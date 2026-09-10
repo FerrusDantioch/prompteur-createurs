@@ -1,0 +1,19 @@
+# Fichiers temporaires des éditeurs et des systèmes d'exploitation
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+*.tmp
+.vscode/
+.idea/
+
+# Réglages personnels de Claude Code (propres à chaque ordinateur).
+# Le fichier .claude/launch.json, lui, est partagé : il sert à lancer le serveur de test.
+.claude/settings.local.json
+
+# Archives de livraison et enregistrements de test déposés par erreur dans le dossier
+*.zip
+*.webm
+*.wav
+
+# Rien d'autre à ignorer : l'application n'a ni dépendance à installer ni étape de compilation.
