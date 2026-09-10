@@ -1,0 +1,84 @@
+Prompteur Créateurs — Licence propriétaire / Proprietary License
+
+Copyright (c) 2026 FerrusDantioch
+Tous droits réservés. All rights reserved.
+
+
+VERSION FRANÇAISE (fait foi)
+============================
+
+1. Propriété
+
+Le code source, les textes, les icônes, l'interface et la documentation de
+Prompteur Créateurs (le « Logiciel ») sont la propriété exclusive de
+FerrusDantioch et sont protégés par le droit d'auteur.
+
+2. Ce qui est autorisé
+
+a) Utiliser gratuitement l'application publiée à l'adresse
+   https://ferrusdantioch.github.io/prompteur-createurs/, y compris l'installer
+   sur son appareil depuis cette adresse. Cela inclut la copie automatique des
+   fichiers par le navigateur, nécessaire au fonctionnement hors ligne.
+
+b) Consulter le code source sur GitHub et en créer une copie (« fork ») au sein
+   de GitHub, dans les seules limites prévues par les conditions d'utilisation
+   de GitHub (section D.5).
+
+3. Ce qui est interdit
+
+Sauf autorisation écrite et préalable du titulaire des droits, il est interdit :
+
+a) de copier ou de reproduire tout ou partie du Logiciel en dehors des usages
+   autorisés à l'article 2 ;
+b) de modifier le Logiciel ou d'en créer une œuvre dérivée ;
+c) de distribuer, publier, héberger ou mettre à disposition le Logiciel, ou une
+   version modifiée, par quelque moyen que ce soit ;
+d) de réutiliser tout ou partie du code, des icônes ou de la documentation dans
+   un autre projet ;
+e) de vendre, louer, concéder en sous-licence ou exploiter commercialement le
+   Logiciel ;
+f) de supprimer ou de modifier les mentions de droit d'auteur et de licence.
+
+4. Composants tiers
+
+Les éléments suivants ne sont pas couverts par la présente licence et restent
+soumis à leur propre licence :
+
+- pdf.js (dossier libs/pdfjs/) : Apache License 2.0, texte complet dans
+  libs/pdfjs/LICENSE ;
+- les polices du dossier fonts/ : SIL Open Font License 1.1, textes complets
+  dans fonts/licences/.
+
+5. Absence de garantie
+
+Le Logiciel est fourni « tel quel », sans garantie d'aucune sorte. Dans les
+limites permises par la loi, le titulaire des droits ne pourra être tenu
+responsable d'aucun dommage résultant de son utilisation, notamment la perte de
+scripts ou d'enregistrements.
+
+6. Demandes d'autorisation
+
+Toute demande d'autorisation peut être adressée via le profil GitHub
+https://github.com/FerrusDantioch.
+
+
+ENGLISH SUMMARY
+===============
+
+Copyright (c) 2026 FerrusDantioch. All rights reserved.
+
+You may use the application online at
+https://ferrusdantioch.github.io/prompteur-createurs/ free of charge, and view
+the source code on GitHub, including forking it on GitHub as permitted by
+GitHub's Terms of Service (section D.5).
+
+Without prior written permission, you may not copy, reproduce, modify,
+distribute, publish, host, sublicense, sell or otherwise exploit the software,
+nor reuse any part of its code, icons or documentation in another project.
+
+Third-party components keep their own licenses: pdf.js (Apache License 2.0,
+libs/pdfjs/LICENSE) and the fonts in fonts/ (SIL Open Font License 1.1,
+fonts/licences/).
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. In case of any
+discrepancy, the French version prevails.

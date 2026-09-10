@@ -1,9 +1,11 @@
 # Prompteur Créateurs — notes pour Claude
 
 PWA de télé-prompteur (modes Vidéaste et Podcast) en **HTML/CSS/JS pur, sans
-framework ni étape de compilation**, destinée à être commercialisée depuis un dépôt
-GitHub privé. Code et commentaires en français, rédigés pour un développeur
-débutant : conserver ce niveau d'explication dans toute modification.
+framework ni étape de compilation**. Dépôt **public sous licence propriétaire**
+(réutilisation du code interdite, voir `LICENSE`) ; l'application en ligne est
+gratuite et un bouton de don est prévu. Code et commentaires en français, rédigés
+pour un développeur débutant : conserver ce niveau d'explication dans toute
+modification.
 
 ## ⚠️ Avant de pousser : incrémenter la version du service worker
 
@@ -31,6 +33,8 @@ propose « Mettre à jour » (refusé pendant un enregistrement).
 
 ## Contraintes du projet
 
+- **Licence propriétaire** (`LICENSE`) : ne jamais proposer ni ajouter de licence
+  open source, et ne pas modifier `LICENSE` sans demande explicite.
 - **Aucun appel réseau externe, aucun CDN.** La CSP de `index.html`
   (`default-src 'self'`) les bloquerait de toute façon. Une bibliothèque doit être
   copiée dans `libs/`, sous licence permissive uniquement (MIT, Apache 2.0, BSD ;
@@ -72,3 +76,7 @@ Les outils d'écriture de fichiers de Claude convertissent les séquences d'éch
 Unicode (antislash, « u », quatre chiffres hexadécimaux) en vrais caractères. Dans le
 code, préférer les classes Unicode des expressions régulières (`\p{Cc}`, `\p{L}`) ou
 les caractères littéraux, puis vérifier avec `node --check app.js`.
+
+## Déploiement
+
+GitHub Pages, branche `main`, racine → https://ferrusdantioch.github.io/prompteur-createurs/

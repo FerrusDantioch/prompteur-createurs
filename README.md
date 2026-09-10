@@ -1,5 +1,7 @@
 # Prompteur Créateurs
 
+**▶ Utiliser l'application en ligne : https://ferrusdantioch.github.io/prompteur-createurs/**
+
 **Le télé-prompteur des créateurs de contenu.** Votre texte défile à l'écran pendant
 que vous filmez ou enregistrez votre voix, sans jamais quitter l'application.
 
@@ -83,30 +85,18 @@ statiques convient aussi.
 
 ---
 
-## Mise en ligne sur GitHub Pages
+## Mise en ligne
 
-1. Créer un dépôt (privé si souhaité) et y envoyer le contenu de ce dossier.
-2. Dans le dépôt : **Settings → Pages → Build and deployment**, source « Deploy from a
-   branch », branche `main`, dossier `/ (root)`.
-3. Après une ou deux minutes, l'application est disponible à l'adresse
-   `https://<compte>.github.io/<depot>/`.
+L'application est publiée avec GitHub Pages, depuis la branche `main` (dossier
+racine) : **https://ferrusdantioch.github.io/prompteur-createurs/**.
+Chaque envoi sur `main` met le site à jour en moins d'une minute.
 
 Tous les chemins sont relatifs : l'application fonctionne aussi bien dans un
 sous-dossier qu'à la racine d'un domaine, sans rien modifier.
 
-> ⚠️ **À savoir avant de commercialiser**
->
-> - **Un dépôt privé ne rend pas le site privé.** Avec un compte GitHub Pro, le site
->   publié par GitHub Pages reste accessible à toute personne qui connaît son
->   adresse, et cette adresse se devine à partir du nom du compte et du dépôt. Le
->   contrôle d'accès aux sites Pages est réservé à GitHub Enterprise Cloud. Pour un
->   accès vraiment restreint, il faut un hébergement avec authentification.
-> - Les conditions d'utilisation de GitHub Pages excluent son usage comme hébergement
->   d'une activité commerciale ou d'un logiciel vendu en tant que service :
->   vérifiez qu'elles sont compatibles avec votre projet.
-> - Comme toute application web, le code servi (HTML, CSS, JavaScript) peut être lu et
->   copié par les personnes qui ouvrent l'application. Le dépôt privé protège les
->   sources et leur historique, pas les fichiers publiés.
+> Comme toute application web, les fichiers servis (HTML, CSS, JavaScript) sont
+> lisibles par les personnes qui ouvrent l'application. Leur réutilisation reste
+> interdite : voir la section [Licence](#licence).
 
 ---
 
@@ -197,6 +187,7 @@ fonts/              polices intégrées (.woff2) et leurs licences
 libs/pdfjs/         pdf.js (lecture des PDF) et sa licence
 serveur-local.js    petit serveur de test, facultatif (non utilisé en ligne)
 .claude/launch.json configuration du serveur de test pour Claude Code
+LICENSE             licence : tous droits réservés, réutilisation interdite
 ```
 
 Aucune dépendance à installer, aucune étape de compilation.
@@ -263,5 +254,10 @@ Les icônes et l'interface ont été créées spécifiquement pour ce projet.
 
 ## Licence
 
-© 2026 — Tous droits réservés. Application propriétaire : toute reproduction ou
-redistribution nécessite l'accord de son auteur.
+© 2026 FerrusDantioch — **tous droits réservés.** Le code est consultable, mais sa
+réutilisation est interdite : copie, modification, redistribution, hébergement ou
+exploitation commerciale nécessitent une autorisation écrite préalable. Les
+conditions complètes figurent dans le fichier [LICENSE](LICENSE).
+
+L'application en ligne reste libre d'utilisation. Les composants tiers (pdf.js et
+les polices) conservent leur propre licence, indiquée plus haut.
