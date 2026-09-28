@@ -3231,6 +3231,16 @@ function initialiserServiceWorker() {
       });
     })
     .catch((erreur) => console.warn('Mode hors ligne indisponible :', erreur));
+
+  /* Stockage persistant : par défaut, le navigateur peut effacer de lui-même
+     la copie hors ligne (et les scripts, enregistrements…) s'il manque de
+     place ou si l'application est peu utilisée. persist() lui demande de les
+     garder. S'il refuse, rien ne change : l'application marche comme avant. */
+  if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persisted()
+      .then((dejaPersistant) => dejaPersistant || navigator.storage.persist())
+      .catch(() => {});
+  }
 }
 
 function proposerMiseAJour(inscription) {

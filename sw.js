@@ -14,7 +14,7 @@
    manquera hors ligne.
    ========================================================================= */
 
-const VERSION = 'prompteur-createurs-v1';
+const VERSION = 'prompteur-createurs-v2';
 
 /* Début commun à tous nos caches. Il permet de reconnaître (et de supprimer)
    les caches de nos anciennes versions sans toucher à rien d'autre. */
